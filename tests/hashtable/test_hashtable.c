@@ -93,3 +93,13 @@ void test_hdb_destroy_hashtable(void) {
 
     hdb_destroy_hashtable(hashtable);
 }
+
+void test_hdb_resize_hashtable(void) {
+    hdb_hashtable_t *hashtable = hdb_create_hashtable(4);
+    assert(hashtable->capacity == 4);
+    hdb_resize_hashtable(hashtable, 10);
+
+    assert(hashtable->capacity == 10);
+
+    free(hashtable);
+}

@@ -61,6 +61,9 @@ void hdb_insert(hdb_hashtable_t *table, const char *key, hdb_value_t *value) {
     entry->next = table->buckets[index];
     table->buckets[index] = entry;
     table->size++;
+    if ((float)table->size / (float)table->capacity > 0.75) {
+        hdb_resize_hashtable(table, table->capacity * 2);
+    }
 }
 
 hdb_value_t *hdb_get(hdb_hashtable_t *table, const char *key) {
@@ -114,4 +117,29 @@ void hdb_destroy_hashtable(hdb_hashtable_t *table) {
     }
     free(table->buckets);
     free(table);
+}
+
+void hdb_resize_hashtable(hdb_hashtable_t *table, size_t new_capacity) {
+    hdb_entry_t **new_buckets = malloc(new_capacity * sizeof(hdb_entry_t *));
+    if (!new_buckets) return;
+    for (size_t i = 0; i < new_capacity; i++) {
+        new_buckets[i] = NULL;
+    }
+    
+    for (size_t i = 0; i < table->capacity; i++) {
+        hdb_entry_t *curr = table->buckets[i];
+        while (curr) {
+            hdb_entry_t *next = curr->next;
+
+            unsigned int index = hash_function(curr->key) % new_capacity;
+            curr->next = new_buckets[index];
+            new_buckets[index] = curr;
+            
+            curr = next;
+        }
+    }
+
+    free(table->buckets);
+    table->buckets = new_buckets;
+    table->capacity = new_capacity;
 }
