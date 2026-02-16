@@ -38,3 +38,18 @@ hdb_value_t *value_create_float(float input_float) {
 
     return value;
 }
+
+void value_free(hdb_value_t *value) {
+    if (!value) return;
+
+    switch(value->type) {
+        case STRING: {
+            free(value->data.string.buffer);
+        }
+        case INTEGER:
+        case FLOAT:
+            break;
+    }
+
+    free(value);
+};

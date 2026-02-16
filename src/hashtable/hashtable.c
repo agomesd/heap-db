@@ -1,5 +1,6 @@
 #include <string.h>
 #include "hashtable.h"
+#include "../values/values.h"
 #include "../utils/utils.h"
 
 hdb_hashtable_t *hdb_create_hashtable(size_t initial_capacity) {
@@ -74,4 +75,28 @@ hdb_value_t *hdb_get(hdb_hashtable_t *table, const char *key) {
     }
 
     return NULL;
+}
+
+int hdb_remove(hdb_hashtable_t *table, const char *key) {
+    size_t index = hash_function(key) % table->capacity;
+    hdb_entry_t *curr = table->buckets[index];
+    hdb_entry_t *prev = NULL;
+
+    while (curr) {
+        if (strcmp(curr->key, key) == 0) {
+            value_free(curr->value);
+            if (!prev) {
+                table->buckets[index] = curr->next;
+            } else {
+                prev->next = curr->next;
+            }
+            free(curr);
+            table->size--;
+            return 1;
+        }
+
+        prev = curr;
+        curr = curr->next;
+    }
+    return 0;
 }

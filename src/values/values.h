@@ -33,5 +33,6 @@ typedef struct Value {
 hdb_value_t *value_create_string(char *string);
 hdb_value_t *value_create_int(int value);
 hdb_value_t *value_create_float(float value);
+void value_free(hdb_value_t *value);
 
 #endif

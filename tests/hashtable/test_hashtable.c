@@ -42,16 +42,43 @@ void test_hdb_create_entry(void) {
     free(entry);
 }
 
-void test_hdb_insert_get(void) {
+void test_hdb_crud(void) {
     const char *key = "test";
     hdb_hashtable_t *hashtable = hdb_create_hashtable(8);
-    hdb_value_t *value= value_create_string("moose");
+    hdb_value_t *value = value_create_string("moose");
     hdb_insert(hashtable, key, value);
+
+    assert(hashtable->size == 1);
 
     hdb_value_t *get_value = hdb_get(hashtable, key);
 
     assert(get_value->type == STRING);
     assert(strcmp(get_value->data.string.buffer, value->data.string.buffer) == 0);
+
+    const char *key_int = "test_int";
+    hdb_value_t *value_int = value_create_int(69);
+    hdb_insert(hashtable, key_int, value_int);
+
+    assert(hashtable->size == 2);
+    
+    hdb_value_t *get_value_int = hdb_get(hashtable, key_int);
+    assert(get_value_int->type == INTEGER);
+    assert(get_value_int->data.integer == 69);
+
+    hdb_value_t *new_int_value = value_create_int(5);
+
+    hdb_insert(hashtable, key_int, new_int_value);
+    assert(hashtable->size = 2);
+    get_value_int = hdb_get(hashtable, key_int);
+    
+    assert(get_value_int->data.integer == 5);
+
+    int remove_success = hdb_remove(hashtable, key_int);
+    assert(hashtable->size = 1);
+    assert(remove_success == 1);
+
+    int remove_failed = hdb_remove(hashtable, "no_key");
+    assert(remove_failed == 0);
 
     free(hashtable);
     free(value);

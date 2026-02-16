@@ -17,6 +17,7 @@ typedef struct Entry {
 
 void hdb_insert(hdb_hashtable_t *table, const char *key, hdb_value_t *value);
 hdb_value_t *hdb_get(hdb_hashtable_t *table, const char *key);
+int hdb_remove(hdb_hashtable_t *table, const char *key);
 
 hdb_entry_t *hdb_create_entry(const char *key, hdb_value_t *value);
 hdb_hashtable_t *hdb_create_hashtable(size_t initial_capacity);
