@@ -10,6 +10,7 @@ int main() {
     test_hash_function();
     test_hdb_create_entry();
     test_hdb_create_table();
+    test_hdb_destroy_hashtable();
     test_hdb_crud();
     printf("All tests passed!\n");
     return 0;

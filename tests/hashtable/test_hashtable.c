@@ -83,3 +83,13 @@ void test_hdb_crud(void) {
     free(hashtable);
     free(value);
 }
+
+
+void test_hdb_destroy_hashtable(void) {
+    hdb_hashtable_t *hashtable = hdb_create_hashtable(8);
+
+    assert(hashtable != NULL);
+    assert(hashtable->capacity == 8);
+
+    hdb_destroy_hashtable(hashtable);
+}

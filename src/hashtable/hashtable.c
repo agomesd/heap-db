@@ -100,3 +100,18 @@ int hdb_remove(hdb_hashtable_t *table, const char *key) {
     }
     return 0;
 }
+
+
+void hdb_destroy_hashtable(hdb_hashtable_t *table) {
+    for (size_t i = 0; i < table->capacity; i++) {
+        hdb_entry_t *curr = table->buckets[i];
+        while (curr) {
+            hdb_entry_t *next = curr->next;
+            value_free(curr->value);
+            free(curr);
+            curr = next;
+        }
+    }
+    free(table->buckets);
+    free(table);
+}
