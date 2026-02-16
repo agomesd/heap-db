@@ -42,8 +42,17 @@ void test_hdb_create_entry(void) {
     free(entry);
 }
 
-void test_hdb_insert(void) {
+void test_hdb_insert_get(void) {
+    const char *key = "test";
     hdb_hashtable_t *hashtable = hdb_create_hashtable(8);
     hdb_value_t *value= value_create_string("moose");
-    hdb_insert(hashtable, "test", value);
+    hdb_insert(hashtable, key, value);
+
+    hdb_value_t *get_value = hdb_get(hashtable, key);
+
+    assert(get_value->type == STRING);
+    assert(strcmp(get_value->data.string.buffer, value->data.string.buffer) == 0);
+
+    free(hashtable);
+    free(value);
 }

@@ -45,7 +45,7 @@ hdb_entry_t *hdb_create_entry(const char *key, hdb_value_t *value) {
 }
 
 void hdb_insert(hdb_hashtable_t *table, const char *key, hdb_value_t *value) {
-    int index = hash_function(key) % table->capacity;
+    unsigned int index = hash_function(key) % table->capacity;
     hdb_entry_t *curr = table->buckets[index];
 
     while(curr) {
@@ -60,4 +60,18 @@ void hdb_insert(hdb_hashtable_t *table, const char *key, hdb_value_t *value) {
     entry->next = table->buckets[index];
     table->buckets[index] = entry;
     table->size++;
+}
+
+hdb_value_t *hdb_get(hdb_hashtable_t *table, const char *key) {
+    unsigned int index =  hash_function(key) % table->capacity;
+    hdb_entry_t *curr = table->buckets[index];
+
+    while (curr) {
+        if (strcmp(curr->key, key) == 0) {
+            return curr->value;
+        }
+        curr = curr->next;
+    }
+
+    return NULL;
 }
