@@ -61,7 +61,7 @@ void hdb_insert(hdb_hashtable_t *table, const char *key, hdb_value_t *value) {
     entry->next = table->buckets[index];
     table->buckets[index] = entry;
     table->size++;
-    if ((float)table->size / (float)table->capacity > 0.75) {
+    if ((float)table->size / (float)table->capacity >= 0.75) {
         hdb_resize_hashtable(table, table->capacity * 2);
     }
 }

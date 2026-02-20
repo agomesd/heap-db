@@ -16,7 +16,7 @@ void test_hdb_create_table(void) {
         assert(hashtable->buckets[i] == NULL);
     }
 
-    free(hashtable);
+    hdb_destroy_hashtable(hashtable);
 
     hdb_hashtable_t *new_hashtable = hdb_create_hashtable(0);
 
@@ -24,7 +24,7 @@ void test_hdb_create_table(void) {
     assert(hashtable->capacity == 8);
     assert(hashtable->size == 0);
 
-    free(new_hashtable);
+    hdb_destroy_hashtable(new_hashtable);
 }
 
 void test_hdb_create_entry(void) {
@@ -80,8 +80,34 @@ void test_hdb_crud(void) {
     int remove_failed = hdb_remove(hashtable, "no_key");
     assert(remove_failed == 0);
 
-    free(hashtable);
-    free(value);
+    hdb_destroy_hashtable(hashtable);
+}
+
+void test_hdb_insert_auto_resize(void) {
+    hdb_hashtable_t *hashtable = hdb_create_hashtable(4);
+
+    assert(hashtable != NULL);
+    assert(hashtable->capacity == 4);
+
+    hdb_value_t *valueone = value_create_string("one");
+    hdb_value_t *valuetwo = value_create_string("two");
+    hdb_value_t *valuethree = value_create_string("three");
+    const char *keyone = "one";
+    const char *keytwo = "two";
+    const char *keythree = "three";
+    hdb_insert(hashtable, keyone, valueone);
+    hdb_insert(hashtable, keytwo, valuetwo);
+    hdb_insert(hashtable, keythree, valuethree);
+
+    assert(hashtable->capacity == 8);
+    assert(hashtable->size == 3);
+
+    assert(hdb_get(hashtable, "one") != NULL);
+    assert(hdb_get(hashtable, "two") != NULL);
+    assert(hdb_get(hashtable, "three") != NULL);
+
+
+    hdb_destroy_hashtable(hashtable);
 }
 
 
@@ -101,5 +127,5 @@ void test_hdb_resize_hashtable(void) {
 
     assert(hashtable->capacity == 10);
 
-    free(hashtable);
+    hdb_destroy_hashtable(hashtable);
 }
