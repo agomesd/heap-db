@@ -15,6 +15,9 @@ int test_array_push(void);
 int test_array_get_basic(void);
 int test_array_get_negative(void);
 int test_array_get_oob(void);
+int test_array_set_basic(void);
+int test_array_set_negative(void);
+int test_array_set_oob(void);
 
 void test_values(void) {
     test_suite_t values_suite;
@@ -27,6 +30,9 @@ void test_values(void) {
     register_test(&values_suite, test_array_get_basic, "array_get basic");
     register_test(&values_suite, test_array_get_negative, "array_get negative index");
     register_test(&values_suite, test_array_get_oob, "array_get out of bounds");
+    register_test(&values_suite, test_array_set_basic, "array_set basic");
+    register_test(&values_suite, test_array_set_negative, "array_set negative");
+    register_test(&values_suite, test_array_set_oob, "array_set out of bounds");
 
     run_all_tests(&values_suite);
     test_suite_destroy(&values_suite);
@@ -193,7 +199,7 @@ int test_array_get_basic(void) {
     hdb_value_t *value = array_get(array, 1);
 
     if (value == NULL) {
-        fprintf(stderr, "Value should not be NULL.");
+        fprintf(stderr, "Value should not be NULL.\n");
         return 1;
     }
 
@@ -218,7 +224,7 @@ int test_array_get_negative(void) {
     hdb_value_t *value = array_get(array, -1);
 
     if (value == NULL) {
-        fprintf(stderr, "Value should not be NULL.");
+        fprintf(stderr, "Value should not be NULL.\n");
         return 1;
     }
 
@@ -251,5 +257,77 @@ int test_array_get_oob(void) {
         return 1;
     }
 
+    value_free(&array);
+
+    return 0;
+}
+
+
+int test_array_set_basic(void) {
+    hdb_value_t *array = value_create_array(4);
+
+    array_push(array, value_create_int(0));
+    array_push(array, value_create_int(1));
+    array_push(array, value_create_int(2));
+
+    array_set(array, 2, value_create_int(3));
+
+    hdb_value_t *value = array_get(array, 2);
+
+    if (value == NULL) {
+        fprintf(stderr, "Value should not be NULL.\n");
+        return 1;
+    }
+
+    if (value->data.integer != 3) {
+        fprintf(stderr, "Value should be 3. Actual: %d.\n", value->data.integer);
+        return 1;
+    }
+
+    value_free(&array);
+    return 0;
+}
+
+int test_array_set_negative(void) {
+    hdb_value_t *array = value_create_array(4);
+
+    array_push(array, value_create_int(0));
+    array_push(array, value_create_int(1));
+    array_push(array, value_create_int(2));
+
+    array_set(array, -1, value_create_int(3));
+
+    hdb_value_t *value = array_get(array, 2);
+
+    if (value == NULL) {
+        fprintf(stderr, "Value should not be NULL.\n");
+        return 1;
+    }
+
+    if (value->data.integer != 3) {
+        fprintf(stderr, "Value should be 3. Actual: %d.\n", value->data.integer);
+        return 1;
+    }
+
+    value_free(&array);
+    return 0;
+}
+
+
+int test_array_set_oob(void) {
+    hdb_value_t *array = value_create_array(4);
+
+    array_push(array, value_create_int(0));
+    array_push(array, value_create_int(1));
+    array_push(array, value_create_int(2));
+
+    hdb_value_t *value = array_set(array, 4, value_create_int(3));
+
+    if (value != NULL) {
+        fprintf(stderr, "Out of bound set value should be NULL.\n");
+        return 1;
+    }
+
+    value_free(&array);
     return 0;
 }

@@ -124,11 +124,14 @@ hdb_value_t *array_set(hdb_value_t *array_value, int index, hdb_value_t *item) {
 
     int comp_index = index < 0 ? array_value->data.array.size + index : index;
 
+    if (comp_index >= 0 && (size_t)comp_index < array_value->data.array.size) {
+        value_free(&array_value->data.array.items[comp_index]);
+        array_value->data.array.items[comp_index] = item;
     
-    value_free(&array_value->data.array.items[comp_index]);
-    array_value->data.array.items[comp_index] = item;
+        return array_value;
+    }    
 
-    return array_value;
+    return NULL;
 }
 
 hdb_value_t *array_get(hdb_value_t *array_value, int index) {
