@@ -1,22 +1,39 @@
+# Compiler
 CC = gcc
-CFLAGS = -Wall -Wextra -I include
 
-SRC = src/values/values.c src/utils/utils.c src/hashtable/hashtable.c
-TEST_SRC = tests/main.c tests/utils/test_utils.c tests/values/test_values.c tests/hashtable/test_hashtable.c
+# Compiler flags
+CFLAGS = -Wall -Wextra -I src -I /usr/local/include/sea-float
 
+# Linker flags
+LDFLAGS = -L /usr/local/lib -lsea-float
+
+# Source files (your actual project code)
+SRC = src/values/values.c
 SRC_OBJ = $(SRC:.c=.o)
+
+# Test files
+TEST_SRC = tests/main.c tests/values/test_values.c
 TEST_OBJ = $(TEST_SRC:.c=.o)
 
+# Output
 TARGET = build/test
 
+# Default
 all: test
 
+# Build test executable
 test: $(SRC_OBJ) $(TEST_OBJ)
-	$(CC) $(CFLAGS) $^ -o $(TARGET)
+	@mkdir -p build
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $(TARGET)
+	@echo "Running tests..."
 	./$(TARGET)
 
+# Compile rule
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Clean
 clean:
-	rm -f $(SRC_OBJ) $(TEST_OBJ) $(TARGET)
+	rm -rf $(SRC_OBJ) $(TEST_OBJ) $(TARGET)
+
+.PHONY: all test clean

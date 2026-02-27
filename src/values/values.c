@@ -1,6 +1,16 @@
 #include "values.h"
 #include <stdlib.h>
 
+const char *value_type_to_string(value_type_t type) {
+    switch(type) {
+        case STRING: return "STRING";
+        case INTEGER: return "INTEGER";
+        case FLOAT: return "FLOAT";
+        case ARRAY: return "ARRAY";
+        default: return "UNKNOWN"; 
+    }
+}
+
 hdb_value_t *value_create_string(char *input_string) {
     size_t len = strlen(input_string);
     hdb_value_t *value = malloc(sizeof(hdb_value_t));
@@ -63,8 +73,10 @@ hdb_value_t *value_create_array(size_t initial_capacity) {
     return value;
 }
 
-void value_free(hdb_value_t *value) {
-    if (!value) return;
+void value_free(hdb_value_t **value_ptr) {
+    if (!value_ptr || !*value_ptr) return;
+
+    hdb_value_t *value = *value_ptr;
 
     switch(value->type) {
         case STRING: {
@@ -73,10 +85,9 @@ void value_free(hdb_value_t *value) {
         }
         case ARRAY: {
             for (size_t i = 0; i < value->data.array.size; i++) {
-                value_free(value->data.array.items[i]);
+                value_free(&value->data.array.items[i]);
             }
             free(value->data.array.items);
-            value->data.array.items = NULL;
             break;
         }
         case INTEGER:
@@ -85,6 +96,7 @@ void value_free(hdb_value_t *value) {
     }
 
     free(value);
+    *value_ptr = NULL;
 };
 
 hdb_value_t *array_push(hdb_value_t *array_value, hdb_value_t *item) {
@@ -112,8 +124,8 @@ hdb_value_t *array_set(hdb_value_t *array_value, int index, hdb_value_t *item) {
 
     int comp_index = index < 0 ? array_value->data.array.size + index : index;
 
-    hdb_value_t *old_value = array_value->data.array.items[comp_index];
-    value_free(old_value);
+    
+    value_free(&array_value->data.array.items[comp_index]);
     array_value->data.array.items[comp_index] = item;
 
     return array_value;
@@ -123,8 +135,36 @@ hdb_value_t *array_get(hdb_value_t *array_value, int index) {
     if (!array_value || array_value->type != ARRAY) return NULL;
 
     int comp_index = index < 0 ? array_value->data.array.size + index : index;
+
     if (comp_index >= 0 && (size_t)comp_index < array_value->data.array.size) {
         return array_value->data.array.items[comp_index];
+    }
+    return NULL;
+}
+
+hdb_value_t *array_remove(hdb_value_t *array_value, int index) {
+    if (!array_value || array_value->type != ARRAY) return NULL;
+
+    int comp_index = index < 0 ? array_value->data.array.size + index : index;
+
+    if (comp_index >= 0 && (size_t)comp_index < array_value->data.array.size) {
+        hdb_value_t *removed_item = array_value->data.array.items[comp_index];
+
+        value_free(&removed_item);
+
+        for (size_t i = comp_index; i < array_value->data.array.size - 1; i++) {
+            array_value->data.array.items[i] = array_value->data.array.items[i+1];
+        }
+        array_value->data.array.size--;
+
+        if (array_value->data.array.size > 0 && array_value->data.array.size <= array_value->data.array.capacity / 4) {
+            size_t new_capacity = array_value->data.array.capacity / 2;
+            hdb_value_t **new_items = realloc(array_value->data.array.items, new_capacity * sizeof(hdb_value_t *));
+            array_value->data.array.items = new_items;
+            array_value->data.array.capacity = new_capacity;
+        }
+
+        return array_value;
     }
     return NULL;
 }
