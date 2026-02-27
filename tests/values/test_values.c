@@ -18,6 +18,9 @@ int test_array_get_oob(void);
 int test_array_set_basic(void);
 int test_array_set_negative(void);
 int test_array_set_oob(void);
+int test_array_remove_basic(void);
+int test_array_remove_negative(void);
+
 
 void test_values(void) {
     test_suite_t values_suite;
@@ -31,8 +34,10 @@ void test_values(void) {
     register_test(&values_suite, test_array_get_negative, "array_get negative index");
     register_test(&values_suite, test_array_get_oob, "array_get out of bounds");
     register_test(&values_suite, test_array_set_basic, "array_set basic");
-    register_test(&values_suite, test_array_set_negative, "array_set negative");
+    register_test(&values_suite, test_array_set_negative, "array_set negative index");
     register_test(&values_suite, test_array_set_oob, "array_set out of bounds");
+    register_test(&values_suite, test_array_remove_basic, "array_remove basic");
+    register_test(&values_suite, test_array_remove_negative, "array_remove negative index");
 
     run_all_tests(&values_suite);
     test_suite_destroy(&values_suite);
@@ -209,7 +214,6 @@ int test_array_get_basic(void) {
     }
 
     value_free(&array);
-
     return 0;
 }
 
@@ -258,7 +262,6 @@ int test_array_get_oob(void) {
     }
 
     value_free(&array);
-
     return 0;
 }
 
@@ -329,5 +332,53 @@ int test_array_set_oob(void) {
     }
 
     value_free(&array);
+    value_free(&value);
+    return 0;
+}
+
+int test_array_remove_basic(void) {
+    hdb_value_t *array = value_create_array(4);
+
+    array_push(array, value_create_int(0));
+    array_push(array, value_create_int(1));
+    array_push(array, value_create_int(2));
+    array_push(array, value_create_int(3));
+
+
+    hdb_value_t *invalid_array = value_create_int(5);
+
+    hdb_value_t *invalid_value = array_remove(invalid_array, 1);
+
+    if (invalid_value != NULL) {
+        fprintf(stderr, "array_remove on non-array value. Should return NULL.\n");
+        return 1;
+    }
+
+    array = array_remove(array, 1);
+    if (array->data.array.size != 3) {
+        fprintf(stderr, "Array size should have decreased to 3 after remove. Actual size: %zu\n", array->data.array.size);
+        return 1;
+    }
+
+    hdb_value_t *oob_value = array_get(array, 3);
+
+    if (oob_value != NULL) {
+        fprintf(stderr, "Out of bound value after array remove should be NULL.\n");
+        return 1;
+    }
+    array = array_remove(array, 1);
+    array = array_remove(array, 1);
+
+    if (array->data.array.capacity != 2) {
+        fprintf(stderr, "Array capacity should have decreased to 2 after removig. Actual: %zu\n", array->data.array.capacity);
+        return 1;
+    }
+
+
+    value_free(&array);
+    return 0;
+}
+
+int test_array_remove_negative(void) {
     return 0;
 }
